@@ -1,0 +1,83 @@
+  <!DOCTYPE html>
+<html>
+  <head>
+    <!--stylesheet imports-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+   <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+
+  </head>
+  <body>
+
+    <div style="position:fixed;left:0px;width:400px">
+    </div>
+
+    <div id="map" style="position:fixed;right:0px;left:400px;height:100%;">
+    </div>
+
+
+
+    <script src="health_centers.js"></script>
+
+
+
+    <script>
+      var map = L.map('map', {
+        center: [39.9522, -75.1639],
+        zoom: 14
+      });
+      var Stamen_TonerLite = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.{ext}', {
+	      attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      	subdomains: 'abcd',
+      	minZoom: 0,
+      	maxZoom: 20,
+      	ext: 'png'
+      }).addTo(map);
+    </script>
+    <script>
+
+      var health=[];
+      var jsonToCsv = function(data) {
+      health[0]=["LNG","LAT","OBJECTID","NAME","ORGANIZATION","ZIP","PHONE","WEBSITE","DENTAL_PHONE","FULL_ADDRESS"];
+        for(i=1;i<=data.length;i++)
+        {
+          health[i]=[data[i-1]['LNG'],data[i-1]['LAT'],data[i-1]['OBJECTID'],data[i-1]['NAME'],data[i-1]['ORGANIZATION'],data[i-1]['ZIP'],data[i-1]['PHONE'],data[i-1]['WEBSITE'],data[i-1]['DENTAL_PHONE'],data[i-1]['FULL_ADDRESS']];
+        };
+        console.log(health);
+      };
+      jsonToCsv(healthCenters);
+
+  var myIcon = L.icon({
+    iconUrl: 'images/dental.png',
+    iconSize: [28, 30],
+    iconAnchor: [22, 94],
+    popupAnchor: [-3, -76],
+});
+
+var pt1 = turf.point([health[1][0], health[1][1]])
+var pt2 = turf.point([health[2][0], health[2][1]])
+var pt3 = turf.point([health[3][0], health[3][1]])
+var pt4 = turf.point([health[4][0], health[4][1]])
+var pt5 = turf.point([health[5][0], health[5][1]])
+var features = turf.featureCollection([pt1, pt2, pt3, pt4, pt5])
+var bbox = turf.bbox(features);
+var bboxPolygon = turf.bboxPolygon(bbox);
+L.geoJSON(bboxPolygon).addTo(map);
+
+      var addMarkers = function(data) {
+      for(var j=1;j<=data.length;j++){
+        if(health[j][8]!="N/A"){
+            L.marker([health[j][1],health[j][0]], {icon: myIcon}).bindPopup(health[j][3]).addTo(map);
+                  }
+          else{
+          L.marker([health[j][1],health[j][0]]).bindPopup(health[j][3]).addTo(map);
+        }
+      }
+    };
+      addMarkers(healthCenters);
+    </script>
+
+
+
+  </body>
+</html>
